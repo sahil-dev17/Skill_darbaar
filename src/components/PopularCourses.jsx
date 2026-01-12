@@ -2,11 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 // IMAGES
-import graphicImg from "../assets/Images/graphic.png";
-import videoImg from "../assets/Images/video01.png";
-import appImg from "../assets/Images/app.jpg";
-import webImg from "../assets/Images/web.jfif";
-import metaImg from "../assets/Images/meta.avif";
+import graphicImg from "../assets/images/graphic.png";
+import videoImg from "../assets/images/video01.png";
+import appImg from "../assets/images/app.jpg";
+import webImg from "../assets/images/web.jfif";
+import metaImg from "../assets/images/meta.avif";
 
 function PopularCourses() {
   const navigate = useNavigate();

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
 // Slider Images
-import img2 from "../assets/Images/slider02.png";
-import img3 from "../assets/Images/slider03.png";
+import img2 from "../assets/images/slider02.png";
+import img3 from "../assets/images/slider03.png";
 import HomeAbout from "./HomeAbout";
 import { Link } from "react-router-dom";
 
