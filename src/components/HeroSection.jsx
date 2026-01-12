@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 // Slider Images
 import img2 from "../assets/Images/slider02.png";
 import img3 from "../assets/Images/slider03.png";
 import HomeAbout from "./HomeAbout";
-
-
-
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   const images = [img2, img3];
 
   const heroContent = [
     {
-      lines: ["Learn Skills", "That Get You", "Hired"],
+      lines: [
+        "Learn Skills",
+        "That Get You Hired",
+        "Build Your Future Today",
+      ],
     },
     {
-      lines: ["Upgrade Your Skills", "Upgrade Your", "Career"],
+      lines: [
+        "Upgrade Your Skills",
+        "Upgrade Your Career",
+        "Learn From Industry Experts",
+      ],
     },
     {
-      lines: ["Master In-Demand", "Skills", "Online"],
+      lines: [
+        "Master In-Demand Skills",
+        "Online & Offline Training",
+        "Start Your Success Journey",
+      ],
     },
   ];
 
@@ -29,64 +38,55 @@ const HeroSection = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % images.length);
-    }, 3000);
+    }, 3500);
 
     return () => clearInterval(timer);
   }, [images.length]);
 
-  const arrowBg = "oklch(79.5% 0.184 86.047)";
-
   return (
     <>
-    <section className="relative w-full h-[82vh] overflow-hidden">
-      {/* SLIDER IMAGES */}
-      {images.map((img, index) => (
-        <img
-          key={index}
-          src={img}
-          alt="Hero Slide"
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            index === current ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
+      <section className="relative w-full h-[95vh] overflow-hidden">
+        {/* SLIDER IMAGES */}
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt="Hero Slide"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              index === current ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
 
-      {/* OVERLAY */}
-      <div className="absolute inset-0 flex items-center justify-start px-6 md:px-24 z-10">
-        {/* LEFT SIDE TEXT */}
-        <div className="text-left max-w-xl ">
-          {heroContent[current].lines.map((line, index) => (
-            <h1
-              key={index}
-              className="text-white text-5xl md:text-7xl font-bold leading-tight"
-            >
-              {line}
-            </h1>
-          ))}
+        {/* DARK OVERLAY */}
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
+
+        {/* TEXT CONTENT */}
+        <div className="absolute inset-0 flex items-center justify-start px-6 md:px-24 z-10">
+          <div className="text-left max-w-2xl">
+            {heroContent[current].lines.map((line, index) => (
+              <h1
+                key={index}
+                className="text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight"
+              >
+                {line}
+              </h1>
+            ))}
+
+            {/* SUB TEXT */}
+            
+
+            {/* CTA BUTTON */}
+          <Link to="/courses">
+  <button className="mt-8 px-8 py-3 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500 transition">
+    Explore Courses
+  </button>
+</Link>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* LEFT ARROW */}
-      <button
-        className="absolute left-6 top-1/2 -translate-y-1/2 p-4 rounded-full z-20 transition hover:scale-110"
-        style={{ backgroundColor: arrowBg }}
-        onClick={() =>
-          setCurrent((prev) => (prev === 0 ? images.length - 1 : prev - 1))
-        }
-      >
-        <FaArrowLeft className="text-black text-xl" />
-      </button>
-
-      {/* RIGHT ARROW */}
-      <button
-        className="absolute right-6 top-1/2 -translate-y-1/2 p-4 rounded-full z-20 transition hover:scale-110"
-        style={{ backgroundColor: arrowBg }}
-        onClick={() => setCurrent((prev) => (prev + 1) % images.length)}
-      >
-        <FaArrowRight className="text-black text-xl" />
-      </button>
-    </section>
-    <HomeAbout/>
+      <HomeAbout />
     </>
   );
 };

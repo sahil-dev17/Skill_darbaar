@@ -9,6 +9,9 @@ import Contact from "./pages/Contact";
 import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
+import CourseDetails from "./pages/CourseDetails";
+import EnquiryPage from "./pages/EnquiryPage";
+import ScrollToTop from "./components/ScrollToTop";
 
 const AppLayout = () => {
   const location = useLocation();
@@ -24,6 +27,9 @@ const AppLayout = () => {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
             <Route path="/courses" element={<Courses/>} />
+            <Route path="/course/:slug" element={<CourseDetails />} />
+            <Route path="/enquiry/:slug" element={<EnquiryPage />} />
+
         <Route path="/contact" element={<Contact />} />
 
         <Route path="/admin/login" element={<AdminLogin />} />
@@ -38,6 +44,7 @@ const AppLayout = () => {
 const App = () => {
   return (
     <BrowserRouter>
+     <ScrollToTop />
       <AppLayout />
     </BrowserRouter>
   );

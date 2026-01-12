@@ -2,7 +2,7 @@ import React from "react";
 import {
   FaFacebookF,
   FaInstagram,
-FaTiktok
+  FaTiktok
 } from "react-icons/fa";
 
 import logo from "../assets/Images/logo.png";
@@ -29,10 +29,36 @@ const Footer = () => {
           </p>
 
           <div className="flex gap-4 mt-2 text-xl">
-            <FaFacebookF className="hover:text-yellow-400 cursor-pointer transition" />
-            <FaInstagram className="hover:text-yellow-400 cursor-pointer transition" />
-            <FaTiktok className="hover:text-yellow-400 cursor-pointer transition" />
-           
+
+            <div className="flex items-center gap-4">
+              <a
+                href="https://www.facebook.com/profile.php?id=61581912482367"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Skill Darbar Facebook"
+              >
+                <FaFacebookF className="hover:text-yellow-400 cursor-pointer transition" />
+              </a>
+
+              <a
+                href="https://www.instagram.com/skill_darbar/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Skill Darbar Instagram"
+              >
+                <FaInstagram className="hover:text-yellow-400 cursor-pointer transition" />
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@skill.darbar"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Skill Darbar TikTok"
+              >
+                <FaTiktok className="hover:text-yellow-400 cursor-pointer transition" />
+              </a>
+            </div>
+
           </div>
         </div>
 

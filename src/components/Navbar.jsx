@@ -7,16 +7,18 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="w-full bg-black shadow-md">
+    <header className="w-full bg-black shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 h-25">
 
         {/* Logo */}
         <div className="flex items-center gap-2">
+         <Link to="/">
           <img
             src={logo}
             alt="Course Logo"
-            className="w-40 h-50 object-contain"
+             className="w-40 h-50 object-contain"
           />
+         </Link>
         </div>
 
         {/* Desktop Menu */}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const HomeAbout = () => {
   return (
@@ -29,9 +30,11 @@ const HomeAbout = () => {
 
           {/* Optional Button */}
           <div className="mt-8">
-            <button className="bg-yellow-400 text-black font-semibold px-8 py-3 rounded-full hover:bg-yellow-500 transition">
-              Explore Courses
-            </button>
+          <Link to="/courses">
+  <button className="mt-8 px-8 py-3 bg-yellow-400 text-black font-semibold rounded-lg hover:bg-yellow-500 transition">
+    Explore Courses
+  </button>
+</Link>
           </div>
 
         </div>
