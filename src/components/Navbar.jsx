@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { PhoneIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
-import logo from "../assets/images/logo.png";
-
+// import logo from "../assets/images/logo.png";
+import logo from "../assets/images/logo.png"
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
