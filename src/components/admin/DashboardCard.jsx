@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaBookOpen, FaEnvelopeOpenText, FaMoneyBillWave } from "react-icons/fa";
-import axiosInstance from "../../utils/axiosInstance"; // adjust path if needed
+import axiosInstance from "../../utils/axiosInstance";
 
 const DashboardCard = () => {
   const [data, setData] = useState({
@@ -17,28 +17,28 @@ const DashboardCard = () => {
     try {
       setLoading(true);
 
-      // Fetch total courses
-      const coursesRes = await axiosInstance.get("/admin/courses");
-      const coursesList = Array.isArray(coursesRes.data)
-        ? coursesRes.data
-        : coursesRes.data?.data || [];
+      const [coursesRes, enquiriesRes, paymentsRes] = await Promise.all([
+        axiosInstance.get("/admin/courses"),
+        axiosInstance.get("/admin/enquiries"),
+        axiosInstance.get("/admin/payments"),
+      ]);
 
-      // Fetch total enquiries
-      const enquiriesRes = await axiosInstance.get("/admin/enquiries");
-      const enquiriesList = Array.isArray(enquiriesRes.data)
-        ? enquiriesRes.data
-        : enquiriesRes.data?.data || [];
+      const coursesList =
+        Array.isArray(coursesRes.data) ? coursesRes.data : coursesRes.data?.data || [];
 
-      // Fetch all payments
-      const paymentsRes = await axiosInstance.get("/admin/payments");
-      const paymentsList = Array.isArray(paymentsRes.data)
-        ? paymentsRes.data
-        : paymentsRes.data?.data || [];
+      const enquiriesList =
+        Array.isArray(enquiriesRes.data) ? enquiriesRes.data : enquiriesRes.data?.data || [];
 
-      // Calculate total payment (only approved payments)
+      const paymentsList =
+        Array.isArray(paymentsRes.data) ? paymentsRes.data : paymentsRes.data?.data || [];
+
+      /* ✅ SUM ONLY APPROVED PAYMENTS */
       const totalPaymentAmount = paymentsList
         .filter((p) => p.status === "approved")
-        .reduce((sum, p) => sum + (p.course?.fees || 0), 0);
+        .reduce(
+          (sum, p) => sum + Number(p.course?.fees || 0),
+          0
+        );
 
       setData({
         totalCourses: coursesList.length,
@@ -61,38 +61,28 @@ const DashboardCard = () => {
   const cards = [
     {
       title: "Total Courses",
-      value: loading
-        ? "..."
-        : data.totalCourses > 0
-        ? data.totalCourses
-        : "-", // show "-" instead of 0
+      value: loading ? "..." : data.totalCourses || "-",
       icon: <FaBookOpen />,
       bg: "bg-blue-500",
     },
     {
       title: "Total Enquiries",
-      value: loading
-        ? "..."
-        : data.totalEnquiries > 0
-        ? data.totalEnquiries
-        : "-", // show "-" instead of 0
+      value: loading ? "..." : data.totalEnquiries || "-",
       icon: <FaEnvelopeOpenText />,
       bg: "bg-green-500",
     },
     {
-  title: "Total Payment",
-  value: loading
-    ? "..."
-    : data.totalPayment > 0
-    ? new Intl.NumberFormat("en-IN", {
-        style: "currency",
-        currency: "INR",
-        minimumFractionDigits: 2,
-      }).format(data.totalPayment)
-    : "₹0.00", // Show a clean 0 if no payment exists
-  icon: <FaMoneyBillWave />,
-  bg: "bg-purple-500",
-},
+      title: "Total Payment",
+      value: loading
+        ? "..."
+        : new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            minimumFractionDigits: 2,
+          }).format(data.totalPayment),
+      icon: <FaMoneyBillWave />,
+      bg: "bg-purple-500",
+    },
   ];
 
   return (
@@ -110,13 +100,13 @@ const DashboardCard = () => {
               border-[0.1rem] border-black/20
             `}
           >
-            {/* Icon */}
             <div className="text-6xl opacity-90">{card.icon}</div>
 
-            {/* Text */}
             <div className="text-center">
               <h3 className="text-lg font-bold opacity-90">{card.title}</h3>
-              <p className="text-3xl font-bold mt-1 truncate">{card.value}</p>
+              <p className="text-3xl font-bold mt-1 truncate">
+                {card.value}
+              </p>
             </div>
           </div>
         ))}

@@ -13,7 +13,7 @@ const CourseDetails = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await axiosInstance.get("/admin/courses"); // public API
+        const res = await axiosInstance.get("/courses"); // public API
         const list = Array.isArray(res.data?.data)
           ? res.data.data
           : res.data;

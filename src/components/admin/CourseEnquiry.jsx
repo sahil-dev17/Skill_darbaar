@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 
 /* ================= DATE FORMATTER ================= */
@@ -20,6 +20,55 @@ function CourseEnquiry() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  /* ================= PAGINATION ================= */
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8; // change if you want 10/15 etc.
+
+  const totalPages = Math.max(1, Math.ceil(users.length / pageSize));
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return users.slice(start, start + pageSize);
+  }, [users, currentPage]);
+
+  const from = users.length ? (currentPage - 1) * pageSize + 1 : 0;
+  const to = Math.min(currentPage * pageSize, users.length);
+
+  // keep currentPage valid when users change (after accept/reject/fetch)
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+    if (currentPage < 1) setCurrentPage(1);
+  }, [users.length, totalPages, currentPage]);
+
+  const getPageButtons = () => {
+    // compact page buttons: 1 ... 4 5 6 ... last
+    const pages = [];
+    const sibling = 1; // pages around current
+    const showDots = (key) => pages.push({ type: "dots", key });
+
+    const addPage = (p) => pages.push({ type: "page", value: p, key: `p-${p}` });
+
+    if (totalPages <= 7) {
+      for (let p = 1; p <= totalPages; p++) addPage(p);
+      return pages;
+    }
+
+    addPage(1);
+
+    const left = Math.max(2, currentPage - sibling);
+    const right = Math.min(totalPages - 1, currentPage + sibling);
+
+    if (left > 2) showDots("dots-left");
+
+    for (let p = left; p <= right; p++) addPage(p);
+
+    if (right < totalPages - 1) showDots("dots-right");
+
+    addPage(totalPages);
+
+    return pages;
+  };
+
   /* ================= FETCH ENQUIRIES ================= */
   const fetchEnquiries = async () => {
     try {
@@ -27,11 +76,11 @@ function CourseEnquiry() {
 
       const res = await axiosInstance.get("/admin/enquiries");
 
-      const list = Array.isArray(res.data)
-        ? res.data
-        : res.data?.data || [];
+      const list = Array.isArray(res.data) ? res.data : res.data?.data || [];
 
       setUsers(list); // keep ALL enquiries
+      setError("");
+      setCurrentPage(1); // reset to first page on fresh fetch
     } catch (err) {
       console.error(err);
       setError("Failed to load enquiries");
@@ -50,9 +99,7 @@ function CourseEnquiry() {
       await axiosInstance.post(`/admin/enquiries/${id}/accept`);
 
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === id ? { ...u, status: "accepted" } : u
-        )
+        prev.map((u) => (u.id === id ? { ...u, status: "accepted" } : u))
       );
     } catch (err) {
       console.error(err.response || err);
@@ -62,16 +109,13 @@ function CourseEnquiry() {
 
   /* ================= REJECT ================= */
   const handleReject = async (id) => {
-    if (!window.confirm("Are you sure you want to reject this enquiry?"))
-      return;
+    if (!window.confirm("Are you sure you want to reject this enquiry?")) return;
 
     try {
       await axiosInstance.post(`/admin/enquiries/${id}/reject`);
 
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === id ? { ...u, status: "rejected" } : u
-        )
+        prev.map((u) => (u.id === id ? { ...u, status: "rejected" } : u))
       );
     } catch (err) {
       console.error(err.response || err);
@@ -112,9 +156,7 @@ function CourseEnquiry() {
         <p className="text-center text-gray-500">Loading enquiries...</p>
       )}
 
-      {error && (
-        <p className="text-center text-red-500">{error}</p>
-      )}
+      {error && <p className="text-center text-red-500">{error}</p>}
 
       {!loading && !error && (
         <div className="px-2 md:px-3 py-4 flex justify-center">
@@ -135,7 +177,7 @@ function CourseEnquiry() {
               </thead>
 
               <tbody>
-                {users.map((user, index) => (
+                {paginatedUsers.map((user, index) => (
                   <tr
                     key={user.id}
                     className="border-b block md:table-row bg-white md:bg-transparent mb-4 md:mb-0 rounded md:rounded-none shadow md:shadow-none"
@@ -143,7 +185,7 @@ function CourseEnquiry() {
                     {/* SERIAL */}
                     <td className="p-3 px-5 md:table-cell flex md:block justify-between">
                       <span className="font-semibold md:hidden">#</span>
-                      {index + 1}
+                      {(currentPage - 1) * pageSize + index + 1}
                     </td>
 
                     {/* NAME */}
@@ -231,6 +273,75 @@ function CourseEnquiry() {
                 )}
               </tbody>
             </table>
+
+            {/* ================= PAGINATION UI ================= */}
+            {users.length > 0 && (
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-2 pb-6">
+                <p className="text-sm text-gray-600">
+                  Showing <span className="font-semibold">{from}</span>–
+                  <span className="font-semibold">{to}</span> of{" "}
+                  <span className="font-semibold">{users.length}</span>
+                </p>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded border text-sm
+                      ${
+                        currentPage === 1
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-white hover:bg-gray-50"
+                      }`}
+                  >
+                    Prev
+                  </button>
+
+                  {getPageButtons().map((item) => {
+                    if (item.type === "dots") {
+                      return (
+                        <span key={item.key} className="px-2 text-gray-500">
+                          ...
+                        </span>
+                      );
+                    }
+
+                    const p = item.value;
+                    const active = p === currentPage;
+
+                    return (
+                      <button
+                        key={item.key}
+                        onClick={() => setCurrentPage(p)}
+                        className={`px-3 py-1 rounded border text-sm
+                          ${
+                            active
+                              ? "bg-gray-900 text-white border-gray-900"
+                              : "bg-white hover:bg-gray-50"
+                          }`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded border text-sm
+                      ${
+                        currentPage === totalPages
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-white hover:bg-gray-50"
+                      }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

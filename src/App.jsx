@@ -16,7 +16,7 @@ import AddCourse from "./components/admin/AddCourse";
 import CourseEnquiry from "./components/admin/CourseEnquiry";
 import QrPage from "./pages/QrPage";
 import PaymentDetails from "./components/admin/PaymentDetails";
-
+import Settings from "./components/admin/Settings";
 const AppLayout = () => {
   const location = useLocation();
 
@@ -48,6 +48,7 @@ const AppLayout = () => {
   <Route path="add-course" element={<AddCourse />} />
   <Route path="enquiry" element={<CourseEnquiry />} />
   <Route path="payment" element={<PaymentDetails />} />
+  <Route path="settings" element={<Settings />} />
 </Route>
       </Routes>
 

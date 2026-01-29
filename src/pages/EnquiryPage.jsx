@@ -16,10 +16,13 @@ const EnquiryPage = () => {
     date: "",
   });
 
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /* ================= FETCH COURSE ID BY SLUG ================= */
+  /* ================= FETCH COURSE ID ================= */
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -41,21 +44,62 @@ const EnquiryPage = () => {
     fetchCourse();
   }, [slug]);
 
+  /* ================= VALIDATION (LIKE AddCourse) ================= */
+  const isEmpty = (v) => !String(v ?? "").trim();
+
+  const validateAll = (data = formData) => {
+    const nextErrors = {};
+
+    if (isEmpty(data.name)) nextErrors.name = "Field is Required";
+    if (isEmpty(data.phone)) nextErrors.phone = "Field is Required";
+    if (isEmpty(data.email)) nextErrors.email = "Field is Required";
+    if (isEmpty(data.date)) nextErrors.date = "Field is Required";
+    if (isEmpty(data.message)) nextErrors.message = "Field is Required";
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const inputClass = (name, base) =>
+    `${base} ${
+      submitted && errors[name]
+        ? "border-red-500 focus:ring-2 focus:ring-red-200"
+        : "border-gray-300"
+    }`;
+
+  const ErrorText = ({ name }) =>
+    submitted && errors[name] ? (
+      <p className="text-red-600 text-sm mt-1">{errors[name]}</p>
+    ) : null;
+
   /* ================= INPUT HANDLER ================= */
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    // phone: digits only
+    if (name === "phone") {
+      const v = value.replace(/\D/g, "").slice(0, 10);
+      setFormData((p) => ({ ...p, phone: v }));
+      if (submitted)
+        setTimeout(() => validateAll({ ...formData, phone: v }), 0);
+      return;
+    }
+
+    setFormData((p) => ({ ...p, [name]: value }));
+    if (submitted)
+      setTimeout(() => validateAll({ ...formData, [name]: value }), 0);
   };
 
   /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!courseId) return;
+    setSubmitted(true);
+    setError("");
+
+    const ok = validateAll();
+    if (!ok || !courseId) return;
 
     setLoading(true);
-    setError("");
 
     try {
       const res = await axiosInstance.post(
@@ -63,17 +107,12 @@ const EnquiryPage = () => {
         formData
       );
 
-      if (!res.data?.success) {
-        throw new Error(res.data?.message || "Submission failed");
-      }
+      if (!res.data?.success) throw new Error("Submission failed");
 
       navigate(`/qr/${slug}`);
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.data?.message ||
-        "Something went wrong. Please try again."
-      );
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -82,8 +121,6 @@ const EnquiryPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-xl bg-white rounded-xl shadow-lg p-6 sm:p-8">
-
-        {/* HEADER */}
         <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-2">
           Course Enquiry
         </h2>
@@ -92,73 +129,88 @@ const EnquiryPage = () => {
           Enquiry for: <b>{slug.replace("-", " ")}</b>
         </p>
 
-        {/* ERROR */}
         {error && (
           <p className="text-red-500 text-center mb-4">{error}</p>
         )}
 
-        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
-
+          {/* NAME */}
           <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
             <input
               type="text"
               name="name"
-              required
+              placeholder="Name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+              className={inputClass(
+                "name",
+                "w-full border rounded-lg px-4 py-2"
+              )}
             />
+            <ErrorText name="name" />
           </div>
 
+          {/* PHONE */}
           <div>
-            <label className="block text-sm font-medium mb-1">Phone</label>
             <input
               type="tel"
               name="phone"
-              required
+              placeholder="Phone"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+              className={inputClass(
+                "phone",
+                "w-full border rounded-lg px-4 py-2"
+              )}
             />
+            <ErrorText name="phone" />
           </div>
 
+          {/* EMAIL */}
           <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               name="email"
-              required
+              placeholder="Email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+              className={inputClass(
+                "email",
+                "w-full border rounded-lg px-4 py-2"
+              )}
             />
+            <ErrorText name="email" />
           </div>
 
+          {/* DATE */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Preferred Date
-            </label>
             <input
               type="date"
               name="date"
-              required
               value={formData.date}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+              className={inputClass(
+                "date",
+                "w-full border rounded-lg px-4 py-2"
+              )}
             />
+            <ErrorText name="date" />
           </div>
 
+          {/* MESSAGE */}
           <div>
-            <label className="block text-sm font-medium mb-1">Message</label>
             <textarea
               name="message"
               rows="4"
+              placeholder="Message"
               value={formData.message}
               onChange={handleChange}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-400"
+              className={inputClass(
+                "message",
+                "w-full border rounded-lg px-4 py-2"
+              )}
             />
+            <ErrorText name="message" />
           </div>
 
           <button
@@ -168,7 +220,6 @@ const EnquiryPage = () => {
           >
             {loading ? "Submitting..." : "Submit Enquiry"}
           </button>
-
         </form>
       </div>
     </div>

@@ -9,7 +9,7 @@ function PopularCourses() {
   // ================= FETCH COURSES =================
   const fetchCourses = async () => {
     try {
-      const res = await axiosInstance.get("/admin/courses");
+      const res = await axiosInstance.get("/courses");
       const list = Array.isArray(res.data?.data)
         ? res.data.data
         : Array.isArray(res.data)
