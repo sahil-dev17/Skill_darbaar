@@ -1,4 +1,4 @@
-// src/pages/admin/PaymentDetails.jsx (adjust path as per your project)
+// src/pages/admin/PaymentDetails.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 
@@ -15,7 +15,9 @@ const StatusBadge = ({ status }) => {
   const base = "px-3 py-1 rounded text-xs font-semibold";
 
   if (status === "approved")
-    return <span className={`${base} bg-green-100 text-green-700`}>Approved</span>;
+    return (
+      <span className={`${base} bg-green-100 text-green-700`}>Approved</span>
+    );
 
   if (status === "rejected")
     return <span className={`${base} bg-red-100 text-red-700`}>Rejected</span>;
@@ -27,9 +29,24 @@ const PaymentDetails = () => {
   const [payments, setPayments] = useState([]); // always keep array
   const [loading, setLoading] = useState(true);
 
+  /* ================= AXIOS BASE URL ================= */
+  // Uses the same baseURL you configured in axiosInstance (e.g. http://192.168.1.13:8000)
+  const API_BASE =
+    (axiosInstance?.defaults?.baseURL || "").replace(/\/$/, ""); // remove trailing /
+
+  const getStorageUrl = (path) => {
+    if (!path) return "";
+    // if backend already returns full URL, use it directly
+    if (/^https?:\/\//i.test(path)) return path;
+
+    // otherwise build: <baseURL>/storage/<path>
+    // (encodeURI to keep slashes but escape spaces etc.)
+    return `${API_BASE}/storage/${encodeURI(path)}`;
+  };
+
   /* ================= PAGINATION ================= */
   const [page, setPage] = useState(1);
-  const pageSize = 10; // ✅ change if you want 5/10/20 etc.
+  const pageSize = 10;
 
   const totalItems = payments.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
@@ -42,14 +59,12 @@ const PaymentDetails = () => {
   const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(page * pageSize, totalItems);
 
-  // keep page valid when data changes
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
     if (page < 1) setPage(1);
   }, [totalPages, page]);
 
   const getPageButtons = () => {
-    // compact buttons: 1 ... (p-1 p p+1) ... last
     const pages = [];
     const sibling = 1;
 
@@ -83,7 +98,6 @@ const PaymentDetails = () => {
       setLoading(true);
       const res = await axiosInstance.get("/admin/payments");
 
-      // ✅ normalize response to array safely
       const list = Array.isArray(res.data)
         ? res.data
         : Array.isArray(res.data?.data)
@@ -128,7 +142,6 @@ const PaymentDetails = () => {
   };
 
   return (
-    // ✅ make page flex so pagination can stick to bottom
     <div className="p-6 bg-gray-50 min-h-screen flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-3xl font-semibold">Payment Details</h1>
@@ -137,7 +150,6 @@ const PaymentDetails = () => {
       {loading ? (
         <p className="text-gray-500">Loading payments...</p>
       ) : (
-        // ✅ flex-grow keeps content above and pushes pagination down
         <div className="flex-grow flex flex-col">
           <div className="overflow-x-auto bg-white shadow rounded-lg">
             <table className="w-full border-collapse">
@@ -197,7 +209,7 @@ const PaymentDetails = () => {
                     <td className="p-4 text-center">
                       {p.payment_image ? (
                         <a
-                          href={`http://192.168.1.13:8000/storage/${p.payment_image}`}
+                          href={getStorageUrl(p.payment_image)}
                           target="_blank"
                           rel="noreferrer"
                           className="text-blue-600 underline"
@@ -214,7 +226,6 @@ const PaymentDetails = () => {
             </table>
           </div>
 
-          {/* ✅ PAGINATION BOTTOM + CENTER */}
           {payments.length > 0 && (
             <div className="mt-auto pt-6 flex flex-col items-center">
               <p className="text-sm text-gray-600 mb-3">
@@ -227,12 +238,11 @@ const PaymentDetails = () => {
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className={`px-3 py-1 rounded border text-sm
-                    ${
-                      page === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white hover:bg-gray-50"
-                    }`}
+                  className={`px-3 py-1 rounded border text-sm ${
+                    page === 1
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white hover:bg-gray-50"
+                  }`}
                 >
                   Prev
                 </button>
@@ -246,21 +256,20 @@ const PaymentDetails = () => {
                     );
                   }
 
-                  const p = item.value;
-                  const active = p === page;
+                  const pNo = item.value;
+                  const active = pNo === page;
 
                   return (
                     <button
                       key={item.key}
-                      onClick={() => setPage(p)}
-                      className={`px-3 py-1 rounded border text-sm
-                        ${
-                          active
-                            ? "bg-gray-900 text-white border-gray-900"
-                            : "bg-white hover:bg-gray-50"
-                        }`}
+                      onClick={() => setPage(pNo)}
+                      className={`px-3 py-1 rounded border text-sm ${
+                        active
+                          ? "bg-gray-900 text-white border-gray-900"
+                          : "bg-white hover:bg-gray-50"
+                      }`}
                     >
-                      {p}
+                      {pNo}
                     </button>
                   );
                 })}
@@ -268,12 +277,11 @@ const PaymentDetails = () => {
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className={`px-3 py-1 rounded border text-sm
-                    ${
-                      page === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white hover:bg-gray-50"
-                    }`}
+                  className={`px-3 py-1 rounded border text-sm ${
+                    page === totalPages
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white hover:bg-gray-50"
+                  }`}
                 >
                   Next
                 </button>

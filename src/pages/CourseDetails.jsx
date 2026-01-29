@@ -9,19 +9,28 @@ const CourseDetails = () => {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /* ================= AXIOS BASE URL ================= */
+  const API_BASE =
+    (axiosInstance?.defaults?.baseURL || "").replace(/\/$/, "");
+
+  const getStorageUrl = (path) => {
+    if (!path) return "";
+    if (/^https?:\/\//i.test(path)) return path; // already absolute
+    return `${API_BASE}/storage/${encodeURI(path)}`;
+  };
+
   /* ================= FETCH COURSE ================= */
   useEffect(() => {
     const fetchCourse = async () => {
       try {
         const res = await axiosInstance.get("/courses"); // public API
-        const list = Array.isArray(res.data?.data)
-          ? res.data.data
-          : res.data;
+        const list = Array.isArray(res.data?.data) ? res.data.data : res.data;
 
-        const found = list.find((c) => c.slug === slug);
+        const found = list?.find?.((c) => c.slug === slug);
         setCourse(found || null);
       } catch (err) {
         console.error("Fetch course failed", err);
+        setCourse(null);
       } finally {
         setLoading(false);
       }
@@ -50,12 +59,11 @@ const CourseDetails = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-6 sm:py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10">
-
         {/* HERO IMAGE */}
         <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-lg">
           {course.image && (
             <img
-              src={`http://192.168.1.13:8000/storage/${course.image}`}
+              src={getStorageUrl(course.image)}
               alt={course.name}
               className="w-full h-56 sm:h-72 md:h-[360px] object-cover"
             />
@@ -68,14 +76,11 @@ const CourseDetails = () => {
 
         {/* CONTENT */}
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-md mt-6 sm:mt-8 p-4 sm:p-6 md:p-8">
-
           {/* INFO BOXES */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
             <div className="border rounded-lg sm:rounded-xl p-4 text-center">
               <p className="text-gray-500 text-sm">Duration</p>
-              <p className="text-lg sm:text-xl font-semibold">
-                {course.duration}
-              </p>
+              <p className="text-lg sm:text-xl font-semibold">{course.duration}</p>
             </div>
 
             <div className="border rounded-lg sm:rounded-xl p-4 text-center">
@@ -96,24 +101,22 @@ const CourseDetails = () => {
             </p>
           </div>
 
-         
-         {/* SYLLABUS PDF */}
-{course.syllabus_pdf && (
-  <div className="mb-6 sm:mb-8">
-    <h3 className="text-lg sm:text-xl font-semibold mb-2">
-      Syllabus PDF
-    </h3>
-    <a
-      href={`http://192.168.1.13:8000/storage/${course.syllabus_pdf}`}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-2 text-blue-600 font-medium text-sm sm:text-base hover:underline"
-    >
-      📄 Download Syllabus (PDF)
-    </a>
-  </div>
-)}
-
+          {/* SYLLABUS PDF */}
+          {course.syllabus_pdf && (
+            <div className="mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2">
+                Syllabus PDF
+              </h3>
+              <a
+                href={getStorageUrl(course.syllabus_pdf)}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-blue-600 font-medium text-sm sm:text-base hover:underline"
+              >
+                📄 Download Syllabus (PDF)
+              </a>
+            </div>
+          )}
 
           {/* CTA */}
           <button
@@ -122,7 +125,6 @@ const CourseDetails = () => {
           >
             Enquiry Now
           </button>
-
         </div>
       </div>
     </div>

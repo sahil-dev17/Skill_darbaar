@@ -5,7 +5,7 @@ import Modelbox from "./Modelbox";
 const AddCourse = () => {
   const formRef = useRef(null);
 
-  const [showForm, setShowForm] = useState(false); // ✅ Add Course modal toggle
+  const [showForm, setShowForm] = useState(false);
 
   const [formData, setFormData] = useState({
     courseName: "",
@@ -16,7 +16,7 @@ const AddCourse = () => {
     syllabus_pdf: null,
   });
 
-  const [imagePreview, setImagePreview] = useState(null); // ✅ preview state
+  const [imagePreview, setImagePreview] = useState(null);
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -25,8 +25,21 @@ const AddCourse = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [updateMessage, setUpdateMessage] = useState("");
   const [deleteMessage, setDeleteMessage] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false); // ✅ Edit modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editCourse, setEditCourse] = useState(null);
+
+  /* ================= AXIOS BASE URL (NO HARDCODE IP) ================= */
+  const API_BASE =
+    (axiosInstance?.defaults?.baseURL || "").replace(/\/$/, ""); // remove trailing /
+
+  const getStorageUrl = (path) => {
+    if (!path) return "";
+    // if already full url, return directly
+    if (/^https?:\/\//i.test(path)) return path;
+
+    // else: baseURL + /storage + path
+    return `${API_BASE}/storage/${encodeURI(path)}`;
+  };
 
   /* ================= FETCH COURSES ================= */
   const fetchCourses = async () => {
@@ -78,7 +91,7 @@ const AddCourse = () => {
       const allowed = ["image/jpeg", "image/png", "image/webp"];
       if (!allowed.includes(data.image.type))
         nextErrors.image = "Only JPG / PNG / WEBP allowed";
-      const max = 2 * 1024 * 1024; // ✅ 2MB
+      const max = 2 * 1024 * 1024;
       if (data.image.size > max) nextErrors.image = "Image must be under 2MB";
     }
 
@@ -86,8 +99,9 @@ const AddCourse = () => {
     else {
       if (data.syllabus_pdf.type !== "application/pdf")
         nextErrors.syllabus_pdf = "Only PDF allowed";
-      const max = 5 * 1024 * 1024; // ✅ 5MB
-      if (data.syllabus_pdf.size > max) nextErrors.syllabus_pdf = "PDF must be under 5MB";
+      const max = 5 * 1024 * 1024;
+      if (data.syllabus_pdf.size > max)
+        nextErrors.syllabus_pdf = "PDF must be under 5MB";
     }
 
     setErrors(nextErrors);
@@ -110,54 +124,55 @@ const AddCourse = () => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    // ✅ file inputs
     if (files && files[0]) {
       const file = files[0];
       setFormData((p) => ({ ...p, [name]: file }));
 
-      // ✅ image preview
       if (name === "image") {
         if (imagePreview) URL.revokeObjectURL(imagePreview);
         const url = URL.createObjectURL(file);
         setImagePreview(url);
       }
 
-      if (submitted) setTimeout(() => validateAll({ ...formData, [name]: file }), 0);
+      if (submitted)
+        setTimeout(() => validateAll({ ...formData, [name]: file }), 0);
       return;
     }
 
-    // ✅ enforce max lengths
     if (name === "courseName") {
       const v = value.slice(0, 80);
       setFormData((p) => ({ ...p, courseName: v }));
-      if (submitted) setTimeout(() => validateAll({ ...formData, courseName: v }), 0);
+      if (submitted)
+        setTimeout(() => validateAll({ ...formData, courseName: v }), 0);
       return;
     }
 
     if (name === "duration") {
       const v = value.slice(0, 25);
       setFormData((p) => ({ ...p, duration: v }));
-      if (submitted) setTimeout(() => validateAll({ ...formData, duration: v }), 0);
+      if (submitted)
+        setTimeout(() => validateAll({ ...formData, duration: v }), 0);
       return;
     }
 
-    // ✅ fees can't be negative (and allow empty while typing)
     if (name === "fees") {
       if (value === "") {
         setFormData((p) => ({ ...p, fees: "" }));
-        if (submitted) setTimeout(() => validateAll({ ...formData, fees: "" }), 0);
+        if (submitted)
+          setTimeout(() => validateAll({ ...formData, fees: "" }), 0);
         return;
       }
       const num = Number(value);
       const safe = Number.isNaN(num) ? "" : Math.max(0, num);
       setFormData((p) => ({ ...p, fees: String(safe) }));
-      if (submitted) setTimeout(() => validateAll({ ...formData, fees: String(safe) }), 0);
+      if (submitted)
+        setTimeout(() => validateAll({ ...formData, fees: String(safe) }), 0);
       return;
     }
 
-    // default
     setFormData((p) => ({ ...p, [name]: value }));
-    if (submitted) setTimeout(() => validateAll({ ...formData, [name]: value }), 0);
+    if (submitted)
+      setTimeout(() => validateAll({ ...formData, [name]: value }), 0);
   };
 
   /* ================= ADD COURSE MODAL OPEN/CLOSE ================= */
@@ -178,7 +193,6 @@ const AddCourse = () => {
     setImagePreview(null);
   };
 
-  /* ✅ close on ESC */
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === "Escape" && showForm) closeAddModal();
@@ -187,7 +201,6 @@ const AddCourse = () => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showForm]);
 
-  /* ✅ cleanup preview on unmount */
   useEffect(() => {
     return () => {
       if (imagePreview) URL.revokeObjectURL(imagePreview);
@@ -235,7 +248,6 @@ const AddCourse = () => {
       setSuccessMessage("Course added successfully ✅");
       setTimeout(() => setSuccessMessage(""), 3000);
 
-      // ✅ close modal after success
       closeAddModal();
     } catch (err) {
       console.error("Add failed", err);
@@ -270,7 +282,6 @@ const AddCourse = () => {
       return;
     }
 
-    // ✅ extra safety
     if (String(updated.courseName).length > 40) {
       alert("Course name max 40 characters");
       return;
@@ -312,16 +323,14 @@ const AddCourse = () => {
 
   return (
     <div className="min-h-screen p-6 bg-gray-100">
-      {/* ✅ ADD COURSE MODAL OVERLAY (BLUR BACKGROUND) */}
+      {/* ✅ ADD COURSE MODAL OVERLAY */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* overlay */}
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={closeAddModal}
           />
 
-          {/* modal content */}
           <div className="relative z-10 w-full max-w-3xl mx-4 bg-white rounded-xl shadow-xl p-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-semibold">Add Course</h2>
@@ -352,7 +361,6 @@ const AddCourse = () => {
                   maxLength={80}
                   className={inputClass("courseName", "w-full border rounded px-4 py-2")}
                 />
-                
                 <ErrorText name="courseName" />
               </div>
 
@@ -367,7 +375,6 @@ const AddCourse = () => {
                     maxLength={25}
                     className={inputClass("duration", "w-full border rounded px-4 py-2")}
                   />
-                 
                   <ErrorText name="duration" />
                 </div>
 
@@ -413,7 +420,6 @@ const AddCourse = () => {
                 />
                 <ErrorText name="image" />
 
-                {/* ✅ Preview */}
                 {imagePreview && (
                   <div className="mt-3">
                     <p className="text-sm text-gray-600 mb-2">Preview:</p>
@@ -433,10 +439,7 @@ const AddCourse = () => {
                   name="syllabus_pdf"
                   accept="application/pdf"
                   onChange={handleChange}
-                  className={inputClass(
-                    "syllabus_pdf",
-                    "w-full border rounded px-3 py-2 bg-white"
-                  )}
+                  className={inputClass("syllabus_pdf", "w-full border rounded px-3 py-2 bg-white")}
                 />
                 <ErrorText name="syllabus_pdf" />
               </div>
@@ -487,7 +490,7 @@ const AddCourse = () => {
                 <td className="p-3">
                   {course.image && (
                     <img
-                      src={`http://192.168.1.13:8000/storage/${course.image}`}
+                      src={getStorageUrl(course.image)}
                       alt={course.name}
                       className="w-16 h-16 object-cover rounded"
                     />
@@ -499,17 +502,15 @@ const AddCourse = () => {
                 <td className="p-3">{course.duration}</td>
 
                 <td className="p-3 max-w-[250px]">
-                  <p className="line-clamp-3 text-sm text-gray-700">{course.description || "—"}</p>
+                  <p className="line-clamp-3 text-sm text-gray-700">
+                    {course.description || "—"}
+                  </p>
                 </td>
 
                 <td className="p-3">
                   {course.syllabus_pdf ? (
                     <a
-                      href={
-                        course.syllabus_pdf.startsWith("http")
-                          ? course.syllabus_pdf
-                          : `http://192.168.1.13:8000/storage/${course.syllabus_pdf}`
-                      }
+                      href={getStorageUrl(course.syllabus_pdf)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 underline text-sm"

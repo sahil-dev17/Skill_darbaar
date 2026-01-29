@@ -26,7 +26,7 @@ const EnquiryPage = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await axiosInstance.get("/admin/courses");
+        const res = await axiosInstance.get("/courses");
         const list = Array.isArray(res.data?.data)
           ? res.data.data
           : res.data;
